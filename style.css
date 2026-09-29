@@ -1,0 +1,243 @@
+*{
+    margin:0;
+    padding:0;
+    font-family: 'Poppins' ,sans-serif;
+    box-sizing: border-box;
+}
+
+body{
+    background: #222;
+
+}
+.card{
+    width:90%;
+    max-width:470px;
+    background: linear-gradient(135deg, #00feb0,#5b548a);
+    color:#fff;
+    margin:100px auto 0;
+    border-radius: 20px;
+    padding:40px 35px;
+    text-align: center;
+}
+
+.search{
+    width:100%;
+    display:flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.search-field{
+    position: relative;
+    flex: 1;
+    margin-right: 16px;
+}
+.search input{
+    border:0;
+    outline:0;
+    background:#ebfffc;
+    color:#555;
+    padding: 10px 25px;
+    height: 60px;
+    border-radius: 30px;
+    width: 100%;
+    padding-right: 52px;
+    margin-right: 0;
+    font-size:18px;
+}
+
+.clear-search{
+    position: absolute;
+    top: 50%;
+    right: 13px;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: 50%;
+    background: #cdd8d7;
+    color: #536261;
+    font-size: 25px;
+    line-height: 1;
+    cursor: pointer;
+    transform: translateY(-50%);
+}
+
+.clear-search:hover{
+    background: #b9c7c5;
+}
+
+.clear-search[hidden]{
+    display: none;
+}
+
+.search .unit-toggle{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: auto;
+    height: 38px;
+    margin-left: 12px;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.toggle-track{
+    display: flex;
+    align-items: center;
+    width: 46px;
+    height: 26px;
+    padding: 3px;
+    border-radius: 999px;
+    background: #c7f7e7;
+    transition: background 0.2s ease;
+}
+
+.toggle-knob{
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #00b98e;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    transform: translateX(20px);
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.unit-toggle.is-fahrenheit .toggle-track{
+    background: #e8edf2;
+}
+
+.unit-toggle.is-fahrenheit .toggle-knob{
+    transform: translateX(0);
+    background: #9aa5b1;
+}
+
+.search input:disabled,
+.unit-toggle:disabled{
+    cursor: wait;
+    opacity: 0.7;
+}
+
+.loading-overlay{
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: grid;
+    place-items: center;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.loading-overlay[hidden]{
+    display: none;
+}
+
+.loading-dialog{
+    min-width: 230px;
+    padding: 28px 24px;
+    border-radius: 18px;
+    background: #fff;
+    color: #333;
+    text-align: center;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+.spinner{
+    display: inline-block;
+    width: 42px;
+    height: 42px;
+    border: 5px solid #d9f7ee;
+    border-top-color: #00b98e;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.loading-dialog p{
+    margin-top: 14px;
+    font-size: 15px;
+}
+
+@keyframes spin{
+    to { transform: rotate(360deg); }
+}
+
+.weather-icon{
+    width: 170px;
+    margin-top: 30px;
+}
+
+.loading-message{
+    display: none;
+    margin-top: 28px;
+    font-size: 17px;
+}
+
+.weather.is-loading > :not(.loading-message){
+    visibility: hidden;
+}
+
+.weather.is-loading .loading-message{
+    display: block;
+}
+
+.weather h1{
+    font-size: 80px;
+    font-weight: 500;
+}
+
+.weather h2{
+    font-size: 45px;
+    font-weight: 400;
+    margin-top: -10px;
+}
+
+.details{
+    display:flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    margin-top:50px;
+}
+
+.col{
+    display: flex;
+    align-items: center;
+    text-align: center; 
+}
+
+.col img{
+    width: 40px;
+    margin-right: 10px;
+}
+
+.humidity, .wind{
+    font-size: 28px;
+    margin-top: -6px;
+}
+
+.ai-advice{
+    margin-top: 36px;
+    padding: 18px;
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.14);
+    text-align: left;
+}
+
+.advice-label{
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    opacity: 0.8;
+}
+
+.advice-text{
+    margin-top: 8px;
+    font-size: 16px;
+    line-height: 1.45;
+}

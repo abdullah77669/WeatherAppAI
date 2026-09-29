@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather AI Advice</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="card">
+        <div class="search">
+            <div class="search-field">
+                <input type="text" placeholder="Enter city or country name" spellcheck="false" aria-label="City or country name">
+                <button class="clear-search" type="button" aria-label="Clear search" hidden>×</button>
+            </div>
+            <button class="unit-toggle" type="button" aria-label="Switch to Fahrenheit" aria-pressed="false">
+                <span>°F</span>
+                <span class="toggle-track"><span class="toggle-knob"></span></span>
+                <span>°C</span>
+            </button>
+        </div>
+
+        <section class="weather">
+            <img src="/images/rain.png" class="weather-icon" alt="Weather icon">
+            <h1 class="temp">25°C</h1>
+            <h2 class="city">New York</h2>
+            <div class="details">
+                <div class="col">
+                    <img src="/images/humidity.png" alt="">
+                    <div>
+                        <p class="humidity">50%</p>
+                        <p>Humidity</p>
+                    </div>
+                </div>
+                <div class="col">
+                    <img src="/images/wind.png" alt="">
+                    <div>
+                        <p class="wind">10 km/h</p>
+                        <p>Wind Speed</p>
+                    </div>
+                </div>
+            </div>
+            <section class="ai-advice" aria-live="polite">
+                <p class="advice-label">AI OUTDOOR ADVICE</p>
+                <p class="advice-text">Search for a city to get a weather-aware suggestion.</p>
+            </section>
+        </section>
+    </main>
+
+    <div class="loading-overlay" aria-live="polite" aria-busy="true" role="status" hidden>
+        <div class="loading-dialog">
+            <span class="spinner" aria-hidden="true"></span>
+            <p>Getting weather and AI advice...</p>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = "b806de2ef7ee2889e433c47b2224f088";
+        const apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=";
+        const searchBox = document.querySelector(".search input");
+        const clearSearch = document.querySelector(".clear-search");
+        const unitToggle = document.querySelector(".unit-toggle");
+        const adviceText = document.querySelector(".advice-text");
+        const loadingOverlay = document.querySelector(".loading-overlay");
+        let units = "metric";
+        let currentCity = "";
+
+        function fallbackAdvice(weather) {
+            const condition = weather.weather[0].main.toLowerCase();
+            const temperature = Math.round(weather.main.temp);
+            if (["rain", "drizzle", "thunderstorm"].includes(condition)) return "Bring an umbrella or a waterproof jacket before heading out.";
+            if (condition === "snow") return "Wear warm layers and choose shoes with good grip for slippery paths.";
+            if (weather.wind.speed >= 10) return "It is quite windy, so secure loose items and consider an extra layer.";
+            if (temperature >= 32) return "Take water, wear sunscreen, and seek shade when possible.";
+            if (temperature <= 10) return "Take a warm jacket before you go.";
+            return "Comfortable conditions overall. Enjoy your time outside!";
+        }
+
+        function weatherForAdvice(weather) {
+            if (units === "metric") return weather;
+            return {
+                ...weather,
+                main: { ...weather.main, temp: (weather.main.temp - 32) * 5 / 9 },
+                wind: { ...weather.wind, speed: weather.wind.speed * 1.60934 }
+            };
+        }
+
+        async function getWeatherAdvice(weather) {
+            try {
+                const response = await fetch("/api/weather-advice", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        city: weather.name,
+                        temperature: Math.round(weather.main.temp),
+                        condition: weather.weather[0].description,
+                        humidity: weather.main.humidity,
+                        windSpeed: weather.wind.speed
+                    })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || "Could not get advice");
+                return result.advice;
+            } catch (error) {
+                console.error(error);
+                return fallbackAdvice(weather);
+            }
+        }
+
+        function renderWeather(weather, advice) {
+            document.querySelector(".city").textContent = weather.name;
+            document.querySelector(".temp").textContent = Math.round(weather.main.temp) + (units === "metric" ? "°C" : "°F");
+            document.querySelector(".humidity").textContent = weather.main.humidity + "%";
+            document.querySelector(".wind").textContent = weather.wind.speed + (units === "metric" ? " km/h" : " mph");
+            document.querySelector(".weather-icon").src = "/images/" + weather.weather[0].main.toLowerCase() + ".png";
+            document.querySelector(".weather-icon").alt = weather.weather[0].description;
+            if (advice) adviceText.textContent = advice;
+        }
+
+        async function checkWeather(city, showLoading = true, refreshAdvice = true) {
+            if (!city.trim()) return;
+            if (showLoading) {
+                loadingOverlay.hidden = false;
+                searchBox.disabled = true;
+                clearSearch.disabled = true;
+                unitToggle.disabled = true;
+            }
+
+            try {
+                const response = await fetch(apiUrl + encodeURIComponent(city) + `&units=${units}&appid=${apiKey}`);
+                const weather = await response.json();
+                if (!response.ok) throw new Error("City not found");
+
+                const advice = refreshAdvice ? await getWeatherAdvice(weatherForAdvice(weather)) : "";
+                renderWeather(weather, advice);
+                currentCity = weather.name;
+            } catch (error) {
+                if (showLoading) adviceText.textContent = error.message === "City not found" ? "City not found. Try another location." : "Could not get weather data. Please try again.";
+            } finally {
+                if (showLoading) {
+                    loadingOverlay.hidden = true;
+                    searchBox.disabled = false;
+                    clearSearch.disabled = false;
+                    unitToggle.disabled = false;
+                }
+            }
+        }
+
+        searchBox.addEventListener("keydown", event => {
+            if (event.key === "Enter") checkWeather(searchBox.value);
+        });
+
+        searchBox.addEventListener("input", () => {
+            clearSearch.hidden = searchBox.value.length === 0;
+        });
+
+        clearSearch.addEventListener("click", () => {
+            searchBox.value = "";
+            clearSearch.hidden = true;
+            searchBox.focus();
+        });
+
+        unitToggle.addEventListener("click", () => {
+            units = units === "metric" ? "imperial" : "metric";
+            const isFahrenheit = units === "imperial";
+            unitToggle.classList.toggle("is-fahrenheit", isFahrenheit);
+            unitToggle.setAttribute("aria-pressed", String(isFahrenheit));
+            unitToggle.setAttribute("aria-label", isFahrenheit ? "Switch to Celsius" : "Switch to Fahrenheit");
+            if (currentCity) checkWeather(currentCity, false, false);
+        });
+    </script>
+</body>
+</html>

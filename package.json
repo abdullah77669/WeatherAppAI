@@ -1,0 +1,10 @@
+{
+  "name": "weather-ai-advice",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.4"
+  }
+}
