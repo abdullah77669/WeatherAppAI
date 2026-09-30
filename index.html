@@ -55,7 +55,7 @@
     </div>
 
     <script>
-        const apiKey = "b806de2ef7ee2889e433c47b2224f088";
+        
         const apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=";
         const searchBox = document.querySelector(".search input");
         const clearSearch = document.querySelector(".clear-search");
@@ -127,7 +127,7 @@
             }
 
             try {
-                const response = await fetch(apiUrl + encodeURIComponent(city) + `&units=${units}&appid=${apiKey}`);
+                const response = await fetch(apiUrl + encodeURIComponent(city) + `&units=${units}&appid=${process.env.API_KEY}`);
                 const weather = await response.json();
                 if (!response.ok) throw new Error("City not found");
 
